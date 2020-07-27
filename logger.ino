@@ -2,6 +2,8 @@
 #include "SD.h"
 #include "HX711.h"
 
+#define DEBUG_MODE false
+
 const int LOADCELL_DOUT_PIN = 3;
 const int LOADCELL_SCK_PIN = 2;
 const int SD_PIN = 10;
@@ -37,9 +39,16 @@ void status_led_toggle(int interval = 1000) {
 }
 
 void setup() {
-  Serial.begin(38400);
+#if DEBUG_MODE
+    Serial.begin(38400);
+#endif
+
   pinMode(LED_PIN, OUTPUT);
   status_led_on();
+
+#if DEBUG_MODE
+  Serial.println("Setting up SD card..");
+#endif
 
   if (!SD.begin(SD_PIN)) {
     while (1) {
@@ -49,13 +58,21 @@ void setup() {
   data_file = SD.open("load.log", FILE_WRITE);
   data_file.println("### NEW MEASUREMENT ###");
 
+#if DEBUG_MODE
+  Serial.println("SD card setup complete.");
+  Serial.println("Setting up Load Cell..");
+#endif
+
   scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
   scale.set_scale();
   scale.tare(); // reset scale to 0
 
   // TODO: Calibrate
-  // Serial.println(scale.get_units(5), 1);
   scale.set_scale(2280.f);
+
+#if DEBUG_MODE
+  Serial.println("Load Cell setup complete.");
+#endif
 }
 
 void loop() {
@@ -68,8 +85,15 @@ void loop() {
     status_led_off();
   }
 
+#if DEBUG_MODE
+  Serial.println(line);
+#endif
+
   data_file.println(line);
   if (millis() - last_sync > SD_OFFLOAD_INTERVAL) {
+#if DEBUG_MODE
+    Serial.println("SD card sync");
+#endif
     last_sync = millis();
     data_file.close();
     data_file = SD.open("load.log", FILE_WRITE);
