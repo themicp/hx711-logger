@@ -67,8 +67,7 @@ void setup() {
   scale.set_scale();
   scale.tare(); // reset scale to 0
 
-  // TODO: Calibrate
-  scale.set_scale(2280.f);
+  scale.set_scale(21800.f);
 
 #if DEBUG_MODE
   Serial.println("Load Cell setup complete.");
